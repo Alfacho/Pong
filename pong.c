@@ -10,6 +10,18 @@
 #define HEIGHT 25
 #define WEIGHT 81
 
+// controls player 1
+#define UP1 'a'
+#define DOWN1 'z'
+#define UP1_H 'A'
+#define DOWN1_H 'z'
+// controls player 2
+#define UP2 'k'
+#define DOWN2 'm'
+#define UP2_H 'K'
+#define DOWN2_H 'M'
+
+
 // functions
 void f_scorebar(int s1, int s2, int w);
 void f_render(int h, int w, int r1_x, int r1_y, int r2_x, int r2_y, int b_x, int b_y);
@@ -77,27 +89,56 @@ void f_render(int h, int w, int r1_x, int r1_y, int r2_x, int r2_y, int b_x, int
                 continue;
             }
 
-            //VOID
+            //FIELD
             printf(" ");
         }
         printf("\n");
     }
 }
 
-int f_first_racket_physics() {
-
+int f_first_racket_physics(int* r1_y, char command) {
+    if ((command == UP1 || command == UP1_H) && (*r1_y < HEIGHT - 1)) {
+        *r1_y++;
+    }
+    if ((command == DOWN1 || command == DOWN1_H) && (*r1_y > 2)) {
+        *r1_y--;
+    }
 
     return 0;
 }
 
-int f_second_racket_physics() {
-    
+int f_second_racket_physics(int* r2_y, char command) {
+    if ((command == UP2 || command == UP2_H) && (*r2_y < HEIGHT - 1)) {
+        *r2_y++;
+    }
+    if ((command == DOWN2 || command == DOWN2_H) && (*r2_y > 2)) {
+        *r2_y--;
+    }
+
     return 0;
 }
 
-int f_ball_physics() {
+int f_ball_physics(int* ball_x, int* ball_y, int* score1, int* score2) {
+    int f_ex = 0, f_gr = 0;
+    if ((*ball_y == 2) && f_ex != 1) {
+        *ball_y == *ball_x;
+        *ball_x++;
+        f_gr = 1;
+        f_ex++;
+    }
+    if ((*ball_y == HEIGHT - 1) && (f_ex != 1)) {
+        *ball_y == *ball_x;
+        *ball_x++;
+        f_gr = 2;
+        f_ex++;
+    }
 
-    return 0;
+
+    if (f_ex == 0) {
+        *ball_x++;
+    } else {
+        return 0;
+    }
 }
 
 //bySAO
