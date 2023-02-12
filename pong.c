@@ -30,7 +30,7 @@ int main(void) {
     // score
     int score1 = 0, score2 = 0;
     // x and y position
-    int r1_y = 13, r2_y = 13, r1_x = 10, r2_x = WEIGHT - 10, ball_x = 41, ball_y = 13;
+    int r1_y = 13, r2_y = 13, r1_x = 10, r2_x = WEIGHT - 10, ball_x = 41, ball_y = 13, f_gr = 0;
     
     f_scorebar(score1, score2, WEIGHT);
     f_render(HEIGHT, WEIGHT, r1_x, r1_y, r2_x, r2_y, ball_x, ball_y);
@@ -118,27 +118,32 @@ int f_second_racket_physics(int* r2_y, char command) {
     return 0;
 }
 
-int f_ball_physics(int* ball_x, int* ball_y, int* score1, int* score2) {
-    int f_ex = 0, f_gr = 0;
-    if ((*ball_y == 2) && f_ex != 1) {
-        *ball_y == *ball_x;
-        *ball_x++;
-        f_gr = 1;
-        f_ex++;
+int f_ball_physics(int* ball_x, int* ball_y, int* score1, int* score2, int* f_gr, int r1_x, int r1_y, int r2_x, int r2_y) {
+    if (((r1_x != *ball_x && r1_y != *ball_y) && (r1_x + 1 != *ball_x && r1_y != *ball_y) && (r1_x + 1 != *ball_x && r1_y != *ball_y)) 
+        && ((r2_x != *ball_x && r2_y != ball_y) && (r2_x - 1 != *ball_x && r2_y != ball_y) && (r2_x + 1!= *ball_x && r2_y != ball_y))) {
+        if ((*ball_y == 2 || *f_gr == 1)) {
+            if (*ball_y != HEIGHT - 1) {
+                *ball_y++;
+                *ball_x = *ball_x + 1;
+                *f_gr = 1;
+                return 0;
+            }
+        }
+        if ((*ball_y == HEIGHT - 1 || f_gr == 2)) {
+            if (*ball_y != 2) {
+                *ball_y--;
+                *ball_x++;
+                f_gr = 2;
+                return 0;
+            }
+        }
     }
-    if ((*ball_y == HEIGHT - 1) && (f_ex != 1)) {
-        *ball_y == *ball_x;
-        *ball_x++;
-        f_gr = 2;
-        f_ex++;
+    if ((r1_x == *ball_x && r1_y == *ball_y) || (r1_x + 1 == *ball_x && r1_y == *ball_y) || (r1_x + 1 == *ball_x && r1_y == *ball_y) || f_gr == 3) {
+        if (((r1_x == *ball_x && r1_y == *ball_y) || (f_gr == 3)) && ((r1_x + 1 != *ball_x && r1_y != *ball_y) && (r1_x + 1 != *ball_x && r1_y != *ball_y))) {
+            //???
+        }
     }
-
-
-    if (f_ex == 0) {
-        *ball_x++;
-    } else {
-        return 0;
-    }
+    *ball_x++;
 }
 
 //bySAO
