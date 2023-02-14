@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <curses.h>
+#include <unistd.h>
 
 // graphics
 #define WALL "|"
@@ -9,6 +11,7 @@
 // features
 #define HEIGHT 25
 #define WEIGHT 81
+#define WIN 10
 
 // controls player 1
 #define UP1 'a'
@@ -25,15 +28,34 @@
 // functions
 void f_scorebar(int s1, int s2, int w);
 void f_render(int h, int w, int r1_x, int r1_y, int r2_x, int r2_y, int b_x, int b_y);
+void f_first_racket_physics(int* r1_y, char command);
+void f_second_racket_physics(int* r2_y, char command);
+int f_ball_physics(int* ball_x, int* ball_y, int* score1, int* score2, int* f_gr, int r1_x, int r1_y, int r2_x, int r2_y, int* impuls);
+void f_whoStart(int* score1, int* score2, int* impuls);
 
 int main(void) {
     // score
     int score1 = 0, score2 = 0;
     // x and y position
-    int r1_y = 13, r2_y = 13, r1_x = 10, r2_x = WEIGHT - 10, ball_x = 41, ball_y = 13, f_gr = 0;
+    int r1_y = 13, r2_y = 13, r1_x = 10, r2_x = WEIGHT - 10, ball_x = 41, ball_y = 13, f_gr = 0, impuls, f = 1;
+    char command;
     
-    f_scorebar(score1, score2, WEIGHT);
-    f_render(HEIGHT, WEIGHT, r1_x, r1_y, r2_x, r2_y, ball_x, ball_y);
+    while (score1 < WIN || score2 < WIN) {
+        if (f == 1) {
+            f_whoStart(score1, score2, impuls);
+            ball_x = 41;
+            ball_y = 13;
+        }
+
+        f_scorebar(score1, score2, WEIGHT);
+        f_render(HEIGHT, WEIGHT, r1_x, r1_y, r2_x, r2_y, ball_x, ball_y);
+
+
+        f_first_racket_physics(r1_y, command);
+        f_second_racket_physics(r2_y, command);
+
+        f = f_ball_physics(ball_x, ball_y, score1, score2, f_gr, r1_x, r1_y, r2_x, r2_y, impuls);
+    }
     
     if (score1 >= 21) {
         f_scorebar(score1, score2, WEIGHT);
@@ -96,54 +118,98 @@ void f_render(int h, int w, int r1_x, int r1_y, int r2_x, int r2_y, int b_x, int
     }
 }
 
-int f_first_racket_physics(int* r1_y, char command) {
+void f_first_racket_physics(int* r1_y, char command) {
     if ((command == UP1 || command == UP1_H) && (*r1_y < HEIGHT - 1)) {
         *r1_y++;
     }
     if ((command == DOWN1 || command == DOWN1_H) && (*r1_y > 2)) {
         *r1_y--;
     }
-
-    return 0;
 }
 
-int f_second_racket_physics(int* r2_y, char command) {
+void f_second_racket_physics(int* r2_y, char command) {
     if ((command == UP2 || command == UP2_H) && (*r2_y < HEIGHT - 1)) {
         *r2_y++;
     }
     if ((command == DOWN2 || command == DOWN2_H) && (*r2_y > 2)) {
         *r2_y--;
     }
+}
 
+int f_ball_physics(int* ball_x, int* ball_y, int* score1, int* score2, int* f_gr, int r1_x, int r1_y, int r2_x, int r2_y, int* impuls) {
+    if ((*ball_x + *impuls == r1_x && *ball_y == r1_y) || (*ball_x + *impuls == r2_x && *ball_y == r2_y)) {
+        *f_gr = 1;
+    }
+    if ((*ball_x + *impuls == r1_x && *ball_y == r1_y - 1) || (*ball_x + *impuls == r2_x && *ball_y == r2_y - 1) || (*ball_y == HEIGHT - 1)) {
+        *f_gr = 2;
+    }
+    if ((*ball_x + *impuls == r1_x && *ball_y == r1_y + 1) || (*ball_x + *impuls == r2_x && *ball_y == r2_y + 1) || (*ball_y == 2)) {
+        *f_gr = 3;
+    }
+    if (*ball_y == 2 && ((ball_y == r2_y - 1 && ball_x == r2_x + *impuls) || (ball_y == r1_y - 1 && ball_x == r1_x + *impuls))) {
+        *f_gr = 4;
+    }
+    if (*ball_y == HEIGHT - 1 && ((ball_y == r2_y + 1 && ball_x == r2_x + *impuls) || (ball_y == r1_y + 1 && ball_x == r1_x + *impuls))) {
+        *f_gr = 5;
+    }
+    if (*ball_x == 2 || *ball_x == WEIGHT - 1) {
+        if (*ball_x == 2) {
+            *score2++;
+        } else {
+            *score1++;
+        }
+        return 1;
+    }
+
+    if (*f_gr <= 1) {
+        if (f_gr != 0) {
+            *impuls = -(*impuls);
+        }
+        *ball_x += *impuls;
+    }
+    if (f_gr == 2) {
+        if ((*ball_x + *impuls == r1_x && *ball_y == r1_y - 1) || (*ball_x + *impuls == r2_x && *ball_y == r2_y - 1)) {
+            *impuls = -(*impuls);
+            *ball_x += *impuls;
+            *ball_y--;
+        } else {
+            *ball_x += *impuls;
+            *ball_y--;
+        }
+    }
+    if (f_gr == 3) {
+        if ((*ball_x + *impuls == r1_x && *ball_y == r1_y + 1) || (*ball_x + *impuls == r2_x && *ball_y == r2_y + 1)) {
+            *impuls = -(*impuls);
+            *ball_x += *impuls;
+            *ball_y++;
+        } else {
+            *ball_x += *impuls;
+            *ball_y++;
+        }
+    }
+    if (f_gr == 4) {
+        *impuls = -(*impuls);
+        *ball_y++;
+        *ball_x += *impuls;
+    }
+    if (f_gr == 5) {
+        *impuls = -(*impuls);
+        *ball_y--;
+        *ball_x += *impuls;
+    }
     return 0;
 }
 
-int f_ball_physics(int* ball_x, int* ball_y, int* score1, int* score2, int* f_gr, int r1_x, int r1_y, int r2_x, int r2_y) {
-    if (((r1_x != *ball_x && r1_y != *ball_y) && (r1_x + 1 != *ball_x && r1_y != *ball_y) && (r1_x + 1 != *ball_x && r1_y != *ball_y)) 
-        && ((r2_x != *ball_x && r2_y != ball_y) && (r2_x - 1 != *ball_x && r2_y != ball_y) && (r2_x + 1!= *ball_x && r2_y != ball_y))) {
-        if ((*ball_y == 2 || *f_gr == 1)) {
-            if (*ball_y != HEIGHT - 1) {
-                *ball_y++;
-                *ball_x = *ball_x + 1;
-                *f_gr = 1;
-                return 0;
-            }
-        }
-        if ((*ball_y == HEIGHT - 1 || f_gr == 2)) {
-            if (*ball_y != 2) {
-                *ball_y--;
-                *ball_x++;
-                f_gr = 2;
-                return 0;
-            }
-        }
+void f_whoStart(int* score1, int* score2, int* impuls) {
+    if (*score1 > *score2) {
+        *impuls = 1;
     }
-    if ((r1_x == *ball_x && r1_y == *ball_y) || (r1_x + 1 == *ball_x && r1_y == *ball_y) || (r1_x + 1 == *ball_x && r1_y == *ball_y) || f_gr == 3) {
-        if (((r1_x == *ball_x && r1_y == *ball_y) || (f_gr == 3)) && ((r1_x + 1 != *ball_x && r1_y != *ball_y) && (r1_x + 1 != *ball_x && r1_y != *ball_y))) {
-            //???
-        }
+    if (*score1 < *score2) {
+        *impuls = -1;
     }
-    *ball_x++;
+    if (*score1 == *score2) {
+        *impuls = 1;
+    }
 }
 
 //bySAO
