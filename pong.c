@@ -80,18 +80,21 @@ int main(void) {
             }
             usleep(speed * 4);
             
+            fflush(stdin);
             c1 = getch();
             f_first_racket_physics(&r1_y, c1, c2);
             fflush(stdin);
 
             if ((c1 == UP1) || (c1 == DOWN1) || (c1 == DOWN1_H) || (c1 == UP1_H)) {
                 while ((c2 == UP1) || (c2 == DOWN1) || (c2 == DOWN1_H) || (c2 == UP1_H)) {
+                    fflush(stdin);
                     c2 = getch();
                     fflush(stdin);
                 }
             }
             if ((c1 == UP2) || (c1 == DOWN2) || (c1 == DOWN2_H) || (c1 == UP2_H)) {
                 while ((c2 == UP1) || (c2 == DOWN1) || (c2 == DOWN1_H) || (c2 == UP1_H)) {
+                    fflush(stdin);
                     c2 = getch();
                     fflush(stdin);
                 }
@@ -117,11 +120,11 @@ int main(void) {
                             printw("PLAYER_1 WON!\n");
                         }
                         if (j == 2 && i == WEIGHT/2 - 14 - 1) {
-                            printw("PRESS q TO EXIT");
+                            printw("PRESS ESC TO EXIT");
                         }
                     }
                 }
-            } while(getch() != 'q');
+            } while(getch() != 27);
         }
         if (score2 >= WIN) {
             do {
@@ -134,11 +137,11 @@ int main(void) {
                             printw("PLAYER_2 WON!\n");
                         }
                         if (j == 2 && i == WEIGHT/2 - 14 - 1) {
-                            printw("PRESS q TO EXIT");
+                            printw("PRESS ESC TO EXIT");
                         }
                     }
                 }
-            } while(getch() != 'q');
+            } while(getch() != 27);
         }
     }
     endwin();
@@ -195,31 +198,31 @@ void f_render(int h, int w, int r1_x, int r1_y, int r2_x, int r2_y, int b_x, int
 }
 
 void f_first_racket_physics(int* r1_y, char command, char command1) {
-    if ((command == UP1 || command == UP1_H) && (*r1_y < HEIGHT - 2) || (command1 == UP1 || command1 == UP1_H) && (*r1_y < HEIGHT - 2)) {
+    if (((command == UP1 || command == UP1_H) && (*r1_y < HEIGHT - 2)) || ((command1 == UP1 || command1 == UP1_H) && (*r1_y < HEIGHT - 2))) {
         *r1_y += 1;
     }
-    if ((command == DOWN1 || command == DOWN1_H) && (*r1_y > 3) || (command1 == DOWN1 || command1 == DOWN1_H) && (*r1_y > 3)) {
+    if (((command == DOWN1 || command == DOWN1_H) && (*r1_y > 3)) || ((command1 == DOWN1 || command1 == DOWN1_H) && (*r1_y > 3))) {
         *r1_y -= 1;
     }
 }
 
 void f_second_racket_physics(int* r2_y, char command, char command1) {
-    if ((command == UP2 || command == UP2_H) && (*r2_y < HEIGHT - 2) || (command1 == UP2 || command1 == UP2_H) && (*r2_y < HEIGHT - 2)) {
+    if (((command == UP2 || command == UP2_H) && (*r2_y < HEIGHT - 2)) || ((command1 == UP2 || command1 == UP2_H) && (*r2_y < HEIGHT - 2))) {
         *r2_y += 1;
     }
-    if ((command == DOWN2 || command == DOWN2_H) && (*r2_y > 3) || (command1 == DOWN2 || command1 == DOWN2_H) && (*r2_y > 3)) {
+    if (((command == DOWN2 || command == DOWN2_H) && (*r2_y > 3)) || ((command1 == DOWN2 || command1 == DOWN2_H) && (*r2_y > 3))) {
         *r2_y -= 1;
     }
 }
 
 int f_ball_physics(int* ball_x, int* ball_y, int* score2, int* score1, int* f_gr, int r1_x, int r1_y, int r2_x, int r2_y, int* impuls) {
-    if ((*ball_x + *impuls == r1_x && *ball_y == r1_y) || (*ball_x + *impuls == r2_x && *ball_y == r2_y)) {
+    if ((((*ball_x + *impuls == r1_x) || (*ball_x == r1_x)) && *ball_y == r1_y) || (((*ball_x + *impuls == r2_x) || (*ball_x == r2_x)) && *ball_y == r2_y)) {
         *f_gr = 1;
     }
-    if ((*ball_x + *impuls == r1_x && *ball_y == r1_y - 1) || (*ball_x + *impuls == r2_x && *ball_y == r2_y - 1) || (*ball_y == HEIGHT - 1)) {
+    if ((((*ball_x + *impuls == r1_x) || (*ball_x == r1_x)) && *ball_y == r1_y - 1) || (((*ball_x + *impuls == r2_x) || (*ball_x == r2_x)) && *ball_y == r2_y - 1) || (*ball_y == HEIGHT - 1)) {
         *f_gr = 2;
     }
-    if ((*ball_x + *impuls == r1_x && *ball_y == r1_y + 1) || (*ball_x + *impuls == r2_x && *ball_y == r2_y + 1) || (*ball_y == 2)) {
+    if ((((*ball_x + *impuls == r1_x) || (*ball_x == r1_x)) && *ball_y == r1_y + 1) || (((*ball_x + *impuls == r2_x) || (*ball_x == r2_x)) && *ball_y == r2_y + 1) || (*ball_y == 2)) {
         *f_gr = 3;
     }
     if (*ball_y == 2 && ((*ball_y == r2_y - 1 && *ball_x == r2_x + *impuls) || (*ball_y == r1_y - 1 && *ball_x == r1_x + *impuls))) {
